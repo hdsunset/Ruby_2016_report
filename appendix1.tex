@@ -1,0 +1,45 @@
+\section{Приложение к пункту 4.2}
+
+В участки кода программы, отвечающие за удаление освещённых рёбер и добавление новых, были внесены следующие изменения:
+
+При удалении или добавлении рёбер с некоторой вероятностью придётся пересчитывать радиус
+  вписанной окружности. На самом этапе удаления ему будет временно присваиваться значение
+    \verb|-1.0|. Далее искомый радиус будет вычисляться в зависимости от ситуации.
+
+
+Учёт удаления ребра, соединяющего конец и начало дека:
+\begin{lstlisting}
+if (@@R - @@center.dist_to_line(@points.last,@points.first))<EPS
+   @@R = -1.0
+end
+\end{lstlisting}
+
+
+ Удаление освещённых рёбер из начала дека:
+\begin{lstlisting}
+@@R = -1.0 if @@R == @@center.dist_to_line(p, @points.first)
+\end{lstlisting}
+
+Удаление освещённых рёбер из конца дека:
+\begin{lstlisting}
+@@R = -1.0 if @@R == @@center.dist_to_line(p, @points.last)
+\end{lstlisting}
+
+В случае, если надо переопределить радиус вписанной окружности, мы также ищем минимальное
+ из расстояний от центра до каждого ребра.
+
+\begin{lstlisting}
+if @@R == -1.0
+  @@R = @@center.dist_to_line(@points.last, @points.first)
+  @points.size.times do
+    if @@R > @@center.dist_to_line(@points.last, @points.first)
+    end
+    @@R = @@center.dist_to_line(@points.last, @points.first)
+    @points.push_last(@points.pop_first)
+  end
+else
+ @@R=[@@R,@@center.dist_to_line(@points.last, @points.first)].min
+ @points.push_last(@points.pop_first)
+ @@R=[@@R,@@center.dist_to_line(@points.last, @points.first)].min
+end
+\end{lstlisting}
